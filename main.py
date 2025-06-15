@@ -1,4 +1,5 @@
 from puzzle import PuzzleState
+from uninformed_searches import *
 
 def main():
     print("=== RESOLUÇÃO DO N-PUZZLE ===")
@@ -24,7 +25,16 @@ def main():
     print("5 - Busca Gulosa")
     escolha = int(input(">>> "))
 
-#Fazer a parte que vai executar as buscas
+#Terminar a parte que vai executar as buscas
+
+    if escolha == 1:
+        bfs(estado_inicial, objetivo, tamanho)
+    elif escolha == 2:
+        dfs(estado_inicial, objetivo, tamanho)
+    elif escolha == 3:
+        ids(estado_inicial, objetivo, tamanho)
+    else:
+        print("Essa opção ainda não está implementada.")
 
 if __name__ == "__main__":
     main()
