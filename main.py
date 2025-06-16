@@ -75,8 +75,8 @@ def main():
         heuristica_escolhida = int(input(">>> "))
 
         if heuristica_escolhida not in [1, 2]:
-            print("Heurística inválida.")
-            return
+            return print("Heurística inválida.")
+            
 
         print("\nEscolha o algoritmo:")
         print("4 - A*")
