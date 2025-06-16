@@ -1,16 +1,16 @@
+# uninformed_searches.py
+
 from puzzle import PuzzleState
 from collections import deque
+from utils import exibir_caminho_com_estados
 import time
 
-def bfs (estado_inicial, objetivo, tamanho_lado): #busca em largura
+def bfs(estado_inicial, objetivo, tamanho_lado):
     print("\nExecutando Busca em Largura (BFS)...")
-
     inicio = time.time()
 
     estado_inicial_obj = PuzzleState(estado_inicial)
-
     fronteira = deque([estado_inicial_obj])
-
     visitados = set()
     visitados.add(tuple(estado_inicial))
 
@@ -25,8 +25,9 @@ def bfs (estado_inicial, objetivo, tamanho_lado): #busca em largura
             print("Quantidade de passos:", len(caminho))
             print(f"Tempo de execução: {fim - inicio:.4f} segundos")
             print("Profundidade da solução:", estado_atual.profundidade)
+            exibir_caminho_com_estados(estado_atual, tamanho_lado)
             return
-        
+
         filhos = estado_atual.gerar_filhos(tamanho_lado)
         for filho in filhos:
             estado_tuple = tuple(filho.estado)
@@ -36,14 +37,16 @@ def bfs (estado_inicial, objetivo, tamanho_lado): #busca em largura
 
     print("Nenhuma solução encontrada.")
 
-def dfs (estado_inicial, objetivo, tamanho_lado, limite_profundidade=50): #busca em profundidade
-
+def dfs(estado_inicial, objetivo, tamanho_lado, limite_profundidade=50):
+    print("\nExecutando Busca em Profundidade (DFS)...")
     inicio = time.time()
+
     pilha = [PuzzleState(estado_inicial)]
     visitados = set()
 
     while pilha:
         estado_atual = pilha.pop()
+
         if tuple(estado_atual.estado) in visitados:
             continue
         visitados.add(tuple(estado_atual.estado))
@@ -56,19 +59,17 @@ def dfs (estado_inicial, objetivo, tamanho_lado, limite_profundidade=50): #busca
             print("Quantidade de passos:", len(caminho))
             print(f"Tempo de execução: {fim - inicio:.4f} segundos")
             print("Profundidade da solução:", estado_atual.profundidade)
+            exibir_caminho_com_estados(estado_atual, tamanho_lado)
             return
-        
+
         if estado_atual.profundidade < limite_profundidade:
             filhos = estado_atual.gerar_filhos(tamanho_lado)
             pilha.extend(filhos[::-1])
 
-    print("Nenhuma solução encontrada ou limite de profundidade atigindo.")
-
+    print("Nenhuma solução encontrada ou limite de profundidade atingido.")
 
 def ids(estado_inicial, objetivo, tamanho_lado, limite_max=50):
-    
     print("\nExecutando Aprofundamento Iterativo (IDS)...")
-    import time
     inicio = time.time()
 
     for limite in range(limite_max + 1):
@@ -81,12 +82,12 @@ def ids(estado_inicial, objetivo, tamanho_lado, limite_max=50):
             print("Quantidade de passos:", len(caminho))
             print(f"Tempo de execução: {fim - inicio:.4f} segundos")
             print("Profundidade da solução:", resultado.profundidade)
+            exibir_caminho_com_estados(resultado, tamanho_lado)
             return
 
     print("Nenhuma solução encontrada dentro do limite máximo.")
 
 def dfs_limitado(estado, objetivo, tamanho_lado, limite):
-    
     pilha = [estado]
     visitados = set()
 
