@@ -46,3 +46,6 @@ class PuzzleState:
     
     def __hash__(self):
         return hash(tuple(self.estado))
+    
+    def __lt__(self, outro):
+        return True
