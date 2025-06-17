@@ -56,28 +56,6 @@ A interface será desenvolvida utilizando Tkinter e permitirá ao usuário:
 
 Adicionalmente, o sistema permitirá a comparação das métricas (tempo, nós expandidos, profundidade) entre diferentes algoritmos e heurísticas para o mesmo estado inicial, facilitando a coleta de dados para o relatório.
 
-## Estrutura do Projeto
-
-A organização dos arquivos e diretórios será a seguinte:
-n_puzzle_solver/
-├── src/
-│   ├── init.py               # Pacote Python
-│   ├── main.py                   # Ponto de entrada da aplicação GUI
-│   ├── gui.py                    # Classes e lógica da interface gráfica (Tkinter)
-│   ├── puzzle_logic.py           # Definição da classe PuzzleState e lógica do tabuleiro
-│   ├── search_algorithms.py      # Implementação de todos os algoritmos de busca
-│   ├── heuristics.py             # Funções de heurística (Manhattan, Peças fora do lugar)
-│   └── utils.py                  # Funções utilitárias (validação, exibição de caminhos)
-├── tests/                        # (Opcional) Testes unitários para a lógica do puzzle e algoritmos
-│   ├── init.py
-│   ├── test_puzzle_logic.py
-│   └── test_search_algorithms.py
-├── assets/                       # (Opcional) Recursos visuais como ícones
-│   └── icon.png
-├── README.md                     # Este arquivo
-├── requirements.txt              # Lista de dependências Python (se houver além do Tkinter)
-└── .gitignore                    # Arquivo para o Git, ignorando pastas e arquivos desnecessários
-
 ## Como Executar
 
 Para executar o Resolvedor n-Puzzle, siga os passos abaixo:
