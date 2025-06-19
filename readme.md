@@ -1,90 +1,181 @@
 # Resolvedor n-Puzzle com Algoritmos de Busca
 
-Este projeto implementa um resolvedor para o clássico problema do n-Puzzle (também conhecido como "quebra-cabeça deslizante") utilizando diversos algoritmos de busca, tanto sem informação quanto com informação. O sistema contará com uma interface gráfica intuitiva desenvolvida em Tkinter para facilitar a interação e a visualização dos resultados.
+Este projeto implementa um resolvedor para o clássico problema do n-Puzzle (quebra-cabeça deslizante) utilizando diversos algoritmos de busca, tanto sem informação quanto com informação. O sistema possui uma interface gráfica intuitiva desenvolvida em Tkinter, permitindo fácil interação, análise e visualização dos resultados.
 
-## Visão Geral do Projeto
+---
 
-O objetivo principal é encontrar a sequência de movimentos que transforma uma configuração inicial do tabuleiro em uma configuração objetivo predefinida. Serão implementados e comparados diferentes algoritmos de busca para analisar sua eficiência em termos de tempo de execução, número de nós expandidos e profundidade da solução.
+## Sumário
 
-## Funcionalidades Planejadas
+- [Visão Geral](#visão-geral)
+- [Funcionalidades](#funcionalidades)
+- [Como Executar o Sistema](#como-executar-o-sistema)
+  - [Pré-requisitos](#pré-requisitos)
+  - [Instalação e Execução](#instalação-e-execução)
+  - [Estrutura dos Arquivos](#estrutura-dos-arquivos)
+- [Como Utilizar a Interface](#como-utilizar-a-interface)
+  - [Seleção do Puzzle](#seleção-do-puzzle)
+  - [Inserção do Estado Inicial](#inserção-do-estado-inicial)
+  - [Escolha do Algoritmo e Heurística](#escolha-do-algoritmo-e-heurística)
+  - [Execução e Visualização dos Resultados](#execução-e-visualização-dos-resultados)
+  - [Comparação de Algoritmos](#comparação-de-algoritmos)
+- [Detalhes Técnicos](#detalhes-técnicos)
+- [Autores](#autores)
+- [Licença](#licença)
 
-O Resolvedor n-Puzzle oferecerá as seguintes funcionalidades:
+---
 
-### Tipos de Puzzle Suportados
-* [cite_start]**8-Puzzle (3x3)** 
-* [cite_start]**15-Puzzle (4x4)** 
-* [cite_start]**24-Puzzle (5x5)** (Disponível apenas para buscas com informação) 
+## Visão Geral
 
-### Algoritmos de Busca Implementados
-O sistema incluirá as seguintes estratégias de busca:
+O objetivo principal é encontrar a sequência de movimentos que transforma uma configuração inicial do tabuleiro em uma configuração objetivo predefinida. O sistema permite comparar diferentes algoritmos de busca quanto à eficiência (tempo, nós expandidos, profundidade da solução) e visualizar a árvore de busca de forma textual estruturada, destacando o caminho solução.
 
-* **Buscas Sem Informação:**
-    * [cite_start]Busca em Largura (Breadth-First Search - BFS) 
-    * [cite_start]Busca em Profundidade (Depth-First Search - DFS) 
-    * [cite_start]Busca com Aprofundamento Iterativo (Iterative Deepening Search - IDS) 
+---
 
-* **Buscas Com Informação:**
-    * [cite_start]A* (A Estrela) 
-    * [cite_start]Busca Gulosa (Greedy Best-First Search) 
+## Funcionalidades
 
-### Heurísticas (para Buscas Com Informação)
-[cite_start]As buscas informadas utilizarão as seguintes heurísticas admissíveis: 
+- **Suporte a múltiplos tamanhos de puzzle:**
+  - 8-Puzzle (3x3)
+  - 15-Puzzle (4x4)
+  - 24-Puzzle (5x5) *(apenas para buscas informadas)*
 
-* [cite_start]Número de peças fora do lugar 
-* [cite_start]Soma das distâncias de Manhattan das peças até suas posições corretas 
+- **Algoritmos de busca implementados:**
+  - **Sem informação:**
+    - Busca em Largura (BFS)
+    - Busca em Profundidade (DFS)
+    - Busca com Aprofundamento Iterativo (IDS)
+  - **Com informação:**
+    - A* (A Estrela)
+    - Busca Gulosa
 
-### Interface Gráfica do Usuário (GUI)
-A interface será desenvolvida utilizando Tkinter e permitirá ao usuário:
+- **Heurísticas para buscas informadas:**
+  - Número de peças fora do lugar
+  - Soma das distâncias de Manhattan das peças até suas posições corretas
 
-* Selecionar o tipo de puzzle (8, 15 ou 24 peças).
-* Inserir o estado inicial do tabuleiro de forma interativa ou textual.
-* Escolher o tipo de busca (sem informação ou com informação).
-* Selecionar o algoritmo de busca específico (BFS, DFS, IDS, A*, Gulosa).
-* Selecionar a heurística desejada (para A* e Busca Gulosa).
-* Visualizar o progresso da busca (opcional).
-* Exibir os resultados da solução de forma clara.
+- **Interface gráfica (Tkinter):**
+  - Seleção do tipo de puzzle
+  - Inserção manual ou embaralhamento automático do estado inicial
+  - Escolha de algoritmo(s) e heurística
+  - Definição do limite de profundidade para DFS/IDS
+  - Execução de múltiplos algoritmos em sequência
+  - Visualização dos resultados detalhados
+  - Visualização textual estruturada da árvore de busca, com destaque do caminho solução
+  - Comparação automática dos algoritmos executados
 
-### Saída de Resultados e Análise Comparativa
-[cite_start]Para cada execução de um algoritmo, o programa apresentará: 
+---
 
-* [cite_start]A sequência de movimentos realizados para alcançar o objetivo. 
-* [cite_start]O número total de passos (profundidade da solução). 
-* [cite_start]O tempo de execução do algoritmo. 
-* [cite_start]O número de nós/estados expandidos durante a busca. 
-* [cite_start]O caminho de busca percorrido, mostrando os estados do tabuleiro a cada passo. 
-* [cite_start]Uma representação da árvore de busca gerada, evidenciando o caminho correto (pode ser via estrutura textual ou visual). 
+## Como Executar o Sistema
 
-Adicionalmente, o sistema permitirá a comparação das métricas (tempo, nós expandidos, profundidade) entre diferentes algoritmos e heurísticas para o mesmo estado inicial, facilitando a coleta de dados para o relatório.
+### Pré-requisitos
 
-## Como Executar
+- **Python 3.8 ou superior** (recomendado Python 3.10, 3.11 ou 3.12)
+- **Tkinter** (já incluso na maioria das instalações do Python)
+- Não são necessárias bibliotecas externas além das padrão do Python
 
-Para executar o Resolvedor n-Puzzle, siga os passos abaixo:
+### Instalação e Execução
 
-1.  **Pré-requisitos:**
-    * Python 3.x instalado.
-    * Tkinter (geralmente já vem com a instalação padrão do Python).
-
-2.  **Clone o Repositório:**
+1. **Clone o repositório:**
     ```bash
-    git clone [https://github.com/seu-usuario/n_puzzle_solver.git](https://github.com/seu-usuario/n_puzzle_solver.git)
+    git clone https://github.com/CaioCasemiro/Trabalho-IA.git
     cd n_puzzle_solver
     ```
 
-3.  **Execute a Aplicação:**
+2. **(Opcional) Crie e ative um ambiente virtual:**
+    ```bash
+    python -m venv venv
+    # No Windows:
+    venv\Scripts\activate
+    # No Linux/Mac:
+    source venv/bin/activate
+    ```
+
+3. **Execute a aplicação:**
     ```bash
     python src/main.py
     ```
 
-Uma janela da aplicação será aberta, permitindo a interação com o resolvedor do n-Puzzle.
+    > **Dica:** Se aparecer erro de Tkinter, instale o pacote correspondente ao seu sistema operacional.
 
-## Contribuição
+### Estrutura dos Arquivos
 
-Contribuições são bem-vindas! Sinta-se à vontade para abrir issues ou pull requests.
+```
+Trabalho-IA/
+│
+├── src/
+│   ├── gui.py                  # Interface gráfica principal
+│   ├── uninformed_searches.py  # Algoritmos BFS, DFS, IDS
+│   ├── informed_searches.py    # Algoritmos A*, Gulosa
+│   ├── puzzle.py               # Estrutura do estado do puzzle
+│   ├── heuristics.py           # Funções de heurística
+│   ├── utils.py                # Funções auxiliares (validação, embaralhamento, árvore textual)
+│   ├── main.py                 # Ponto de entrada da aplicação
+│
+├── readme.md
+└── ...
+```
 
-## Autor
+---
 
-Kaio Mourato e Caio Casemiro
+## Como Utilizar a Interface
+
+### Seleção do Puzzle
+
+- Escolha o tamanho do puzzle (8, 15 ou 24 peças) no topo da janela.
+- O grid de entrada será ajustado automaticamente.
+
+### Inserção do Estado Inicial
+
+- Preencha manualmente cada célula do grid com os números do estado inicial desejado.
+- Ou clique em **"Embaralhar"** para gerar automaticamente um estado inicial solúvel aleatório.
+
+### Escolha do Algoritmo e Heurística
+
+- Marque um ou mais algoritmos de busca para executar.
+- Para A* ou Gulosa, selecione a heurística desejada (combobox será habilitado automaticamente).
+- Para DFS/IDS, defina o limite de profundidade se desejar.
+
+### Execução e Visualização dos Resultados
+
+- Clique em **"Executar"** para iniciar a busca.
+- Os resultados aparecerão na aba **"Resultados"**, incluindo:
+  - Tempo de execução
+  - Número de nós expandidos
+  - Profundidade da solução
+  - Sequência de movimentos
+- A aba **"Árvore de Busca"** mostrará uma representação textual estruturada da árvore de busca, com o caminho solução destacado.
+  - Cada nó exibe: profundidade, movimento (se aplicável) e o estado do tabuleiro.
+  - O caminho correto é destacado com "***" antes e depois da linha.
+- A aba **"Comparativo"** mostra uma tabela comparando os algoritmos executados.
+
+### Comparação de Algoritmos
+
+- Execute múltiplos algoritmos para o mesmo estado inicial.
+- Compare tempo, nós expandidos e profundidade na aba "Comparativo".
+
+---
+
+## Detalhes Técnicos
+
+- **Árvore de Busca Textual:**  
+  A árvore é impressa com indentação e símbolos (├──, └──) para indicar hierarquia. O caminho solução é destacado.  
+  Exemplo de nó:
+  ```
+  *** Prof 3 [CIMA]: 1 2 3 | 4 5 6 | 7 8   ***
+  ```
+- **Estados Solúveis:**  
+  O sistema só permite execução para estados solúveis, validando automaticamente a entrada.
+- **Limite de Nós:**  
+  Para puzzles grandes, a árvore textual pode ser muito extensa. Use puzzles menores para melhor visualização.
+
+---
+
+## Autores
+
+- Kaio Mourato
+- Caio Casemiro
+
+---
 
 ## Licença
 
-Este projeto está sob a licença [Escolha uma licença, por exemplo, MIT ou GNU GPL].
+Este projeto está sob a licença MIT. Consulte o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+---
