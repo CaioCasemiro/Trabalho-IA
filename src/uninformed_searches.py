@@ -1,5 +1,3 @@
-# uninformed_searches.py
-
 from puzzle import PuzzleState
 from utils import exibir_caminho_com_estados
 import time

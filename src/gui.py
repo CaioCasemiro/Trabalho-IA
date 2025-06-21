@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext
 from uninformed_searches import bfs, dfs, ids
 from informed_searches import a_estrela, gulosa
-from utils import validar_estado_inicial, gerar_estado_objetivo, gerar_estado_embaralhado_soluvel, gerar_arvore_busca
+from utils import validar_estado_inicial, gerar_estado_objetivo, gerar_estado_embaralhado_soluvel, reconstruir_caminho, plotar_arvore_networkx
 
 class NPuzzleGUI(tk.Tk):
     def __init__(self):
@@ -27,7 +27,6 @@ class NPuzzleGUI(tk.Tk):
         self.build_interface()
 
     def build_interface(self):
-        # Frame Tipo de Busca
         frame_tipo = ttk.Frame(self)
         frame_tipo.pack(pady=5)
 
@@ -35,8 +34,8 @@ class NPuzzleGUI(tk.Tk):
 
         self.tipo_busca_var = tk.StringVar(value="Sem Informação")
 
-        rb_sem_info = ttk.Radiobutton(frame_tipo, text="Sem Informação", variable=self.tipo_busca_var, value="Sem Informação", command=self.atualizar_tamanhos)
-        rb_com_info = ttk.Radiobutton(frame_tipo, text="Com Informação", variable=self.tipo_busca_var, value="Com Informação", command=self.atualizar_tamanhos)
+        rb_sem_info = ttk.Radiobutton(frame_tipo, text="Sem Informação", variable=self.tipo_busca_var, value="Sem Informação", command=self.atualizar_interface_algoritmos)
+        rb_com_info = ttk.Radiobutton(frame_tipo, text="Com Informação", variable=self.tipo_busca_var, value="Com Informação", command=self.atualizar_interface_algoritmos)
 
         rb_sem_info.pack(side=tk.LEFT, padx=5)
         rb_com_info.pack(side=tk.LEFT, padx=5)
@@ -50,25 +49,12 @@ class NPuzzleGUI(tk.Tk):
         self.combo_tamanho.pack(side=tk.LEFT, padx=5)
         self.combo_tamanho.bind("<<ComboboxSelected>>", self.atualizar_grid)
 
-        # CRIAR self.frame_grid ANTES de chamar atualizar_tamanhos
-        frame_grid = ttk.Frame(self)
-        frame_grid.pack(pady=10)
-        self.frame_grid = frame_grid
+        self.frame_grid = ttk.Frame(self)
+        self.frame_grid.pack(pady=10)
         self.entries_grid = []
 
-        self.atualizar_tamanhos()
-
-        frame_alg = ttk.Frame(self)
-        frame_alg.pack(pady=5)
-
-        ttk.Label(frame_alg, text="Algoritmo(s):").pack(side=tk.LEFT)
-
-        self.alg_vars = {}
-        for nome in self.algoritmos:
-            var = tk.BooleanVar()
-            cb = ttk.Checkbutton(frame_alg, text=nome, variable=var, command=self.atualizar_heuristica_state)
-            cb.pack(side=tk.LEFT, padx=2)
-            self.alg_vars[nome] = var
+        self.frame_alg = ttk.Frame(self)
+        self.frame_alg.pack(pady=5)
 
         frame_heur = ttk.Frame(self)
         frame_heur.pack(pady=5)
@@ -97,19 +83,23 @@ class NPuzzleGUI(tk.Tk):
         self.tabs = ttk.Notebook(self)
 
         self.tab_resultados = ttk.Frame(self.tabs)
-        self.tab_arvore = ttk.Frame(self.tabs)
+        self.tab_caminho = ttk.Frame(self.tabs)
         self.tab_comparativo = ttk.Frame(self.tabs)
 
         self.tabs.add(self.tab_resultados, text="Resultados")
-        self.tabs.add(self.tab_arvore, text="Árvore de Busca")
+        self.tabs.add(self.tab_caminho, text="Caminho até a solução")
         self.tabs.add(self.tab_comparativo, text="Comparativo")
         self.tabs.pack(expand=True, fill="both")
 
         self.txt_resultados = scrolledtext.ScrolledText(self.tab_resultados, width=110, height=15, font=("Consolas", 10))
         self.txt_resultados.pack(padx=5, pady=5)
 
-        self.txt_arvore = scrolledtext.ScrolledText(self.tab_arvore, width=110, height=30, font=("Consolas", 10))
-        self.txt_arvore.pack(padx=5, pady=5, fill="both", expand=True)
+        # Botão para Visualizar Árvore
+        btn_plotar_arvore = ttk.Button(self.tab_resultados, text="Visualizar Árvore", command= lambda: plotar_arvore_networkx(self.arvore_atual, self.estado_objetivo_atual, self.tamanho_atual))
+        btn_plotar_arvore.pack(pady=5)
+
+        self.txt_caminho = scrolledtext.ScrolledText(self.tab_caminho, width=110, height=30, font=("Consolas", 10))
+        self.txt_caminho.pack(padx=5, pady=5, fill="both", expand=True)
 
         self.tree_comp = ttk.Treeview(self.tab_comparativo, columns=("Algoritmo", "Heurística", "Tempo", "Nós", "Profundidade"), show="headings")
         for col in self.tree_comp["columns"]:
@@ -117,11 +107,10 @@ class NPuzzleGUI(tk.Tk):
             self.tree_comp.column(col, width=120)
         self.tree_comp.pack(expand=True, fill="both", padx=5, pady=5)
 
-    def atualizar_heuristica_state(self):
-        if self.alg_vars["A*"].get() or self.alg_vars["Gulosa"].get():
-            self.combo_heur.config(state="readonly")
-        else:
-            self.combo_heur.config(state="disabled")
+        self.alg_vars = {}
+
+        self.atualizar_tamanhos()
+        self.atualizar_interface_algoritmos()
 
     def atualizar_tamanhos(self):
         if self.tipo_busca_var.get() == "Sem Informação":
@@ -156,6 +145,26 @@ class NPuzzleGUI(tk.Tk):
             self.entries_grid[i][j].delete(0, tk.END)
             self.entries_grid[i][j].insert(0, str(val))
 
+    def atualizar_interface_algoritmos(self):
+        for widget in self.frame_alg.winfo_children():
+            widget.destroy()
+        self.alg_vars.clear()
+
+        tipo = self.tipo_busca_var.get()
+
+        if tipo == "Sem Informação":
+            algoritmos_visiveis = ["BFS", "DFS", "IDS"]
+            self.combo_heur.config(state="disabled")
+        else:
+            algoritmos_visiveis = ["A*", "Gulosa"]
+            self.combo_heur.config(state="readonly")
+
+        for nome in algoritmos_visiveis:
+            var = tk.BooleanVar()
+            cb = ttk.Checkbutton(self.frame_alg, text=nome, variable=var)
+            cb.pack(side=tk.LEFT, padx=5)
+            self.alg_vars[nome] = var
+
     def ler_estado_inicial(self):
         tamanho = int(self.combo_tamanho.get().split("(")[1][0])
         estado = []
@@ -177,7 +186,7 @@ class NPuzzleGUI(tk.Tk):
 
     def executar_busca(self):
         self.txt_resultados.delete("1.0", tk.END)
-        self.txt_arvore.delete("1.0", tk.END)
+        self.txt_caminho.delete("1.0", tk.END)
 
         tamanho = int(self.combo_tamanho.get().split("(")[1][0])
         estado_inicial = self.ler_estado_inicial()
@@ -210,38 +219,47 @@ class NPuzzleGUI(tk.Tk):
 
         for alg_nome in selecionados:
             self.txt_resultados.insert(tk.END, f"\n=== {alg_nome} ===\n")
+            func = self.algoritmos[alg_nome]
+
             if alg_nome in ["A*", "Gulosa"]:
-                func = self.algoritmos[alg_nome]
                 resultado = func(estado_inicial, objetivo, tamanho, heuristica, gui_mode=True)
-            elif alg_nome == "DFS":
-                func = self.algoritmos[alg_nome]
-                resultado = func(estado_inicial, objetivo, tamanho, limite, gui_mode=True)
-            elif alg_nome == "IDS":
-                func = self.algoritmos[alg_nome]
+            elif alg_nome in ["DFS", "IDS"]:
                 resultado = func(estado_inicial, objetivo, tamanho, limite, gui_mode=True)
             else:
-                func = self.algoritmos[alg_nome]
                 resultado = func(estado_inicial, objetivo, tamanho, gui_mode=True)
 
             if resultado is None:
                 self.txt_resultados.insert(tk.END, "Nenhuma solução encontrada.\n")
-                self.txt_arvore.delete("1.0", tk.END)
-                self.txt_arvore.insert(tk.END, "Árvore não gerada (sem solução).\n")
+                self.txt_caminho.delete("1.0", tk.END)
+                self.txt_caminho.insert(tk.END, "Sem solução encontrada.\n")
                 continue
 
-            caminho, tempo, nos_expandidos, profundidade, arvore_txt, arvore, estado_objetivo_tuple = resultado
+            caminho_mov, tempo, nos_expandidos, profundidade, arvore_txt, arvore, estado_objetivo_tuple = resultado
 
             self.txt_resultados.insert(tk.END, f"Tempo de execução: {tempo:.4f} s\n")
             self.txt_resultados.insert(tk.END, f"Nós expandidos: {nos_expandidos}\n")
             self.txt_resultados.insert(tk.END, f"Profundidade da solução: {profundidade}\n")
-            self.txt_resultados.insert(tk.END, f"Sequência de movimentos: {caminho}\n")
+            self.txt_resultados.insert(tk.END, f"Sequência de movimentos: {caminho_mov}\n")
             self.txt_resultados.insert(tk.END, "-"*60 + "\n")
 
             resultados_comp.append((alg_nome, heuristica_nome if alg_nome in ["A*", "Gulosa"] else "-", f"{tempo:.4f}", nos_expandidos, profundidade))
 
-            self.txt_arvore.delete("1.0", tk.END)
-            arvore_str = gerar_arvore_busca(arvore, estado_objetivo_tuple, tamanho)
-            self.txt_arvore.insert(tk.END, arvore_str)
+            self.txt_caminho.delete("1.0", tk.END)
+
+            passo_str = ""
+            for i, estado in enumerate(reconstruir_caminho(arvore, estado_objetivo_tuple)):
+                passo_str += f"*** Passo {i} ***\n"
+                for j in range(tamanho):
+                    linha = estado[j * tamanho:(j + 1) * tamanho]
+                    passo_str += " ".join(f"{n:2}" if n != 0 else "  " for n in linha) + "\n"
+                passo_str += "-" * 30 + "\n"
+
+            self.txt_caminho.insert(tk.END, passo_str)
+
+            # Salva variáveis para o botão "Visualizar Árvore"
+            self.arvore_atual = arvore
+            self.estado_objetivo_atual = estado_objetivo_tuple
+            self.tamanho_atual = tamanho
 
         for i in self.tree_comp.get_children():
             self.tree_comp.delete(i)

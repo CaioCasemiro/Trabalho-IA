@@ -1,4 +1,6 @@
 import random
+import networkx as nx
+import matplotlib.pyplot as plt
 
 def exibir_caminho_com_estados(estado_final, tamanho_lado):
     caminho = []
@@ -16,9 +18,7 @@ def exibir_caminho_com_estados(estado_final, tamanho_lado):
     return saida
 
 def reconstruir_caminho(arvore_map, estado_objetivo_tuple):
-    """
-    Retorna a lista de estados (tuples) do caminho solução do inicial ao objetivo.
-    """
+
     caminho = []
     atual = estado_objetivo_tuple
     while atual is not None:
@@ -27,9 +27,7 @@ def reconstruir_caminho(arvore_map, estado_objetivo_tuple):
     return caminho[::-1]
 
 def formatar_estado(estado, tamanho):
-    """
-    Retorna uma string formatada do tabuleiro em linhas.
-    """
+
     linhas = []
     for i in range(tamanho):
         linha = estado[i*tamanho:(i+1)*tamanho]
@@ -37,13 +35,7 @@ def formatar_estado(estado, tamanho):
     return " | ".join(linhas)
 
 def gerar_arvore_busca(arvore_map, estado_objetivo_tuple, tamanho, movimentos=None):
-    """
-    Gera uma representação textual estruturada da árvore de busca.
-    - arvore_map: dict filho_tuple -> pai_tuple
-    - estado_objetivo_tuple: tuple do objetivo
-    - tamanho: lado do puzzle (3, 4, 5)
-    - movimentos: dict filho_tuple -> movimento (opcional, para mostrar o movimento que levou ao nó)
-    """
+
     # Reconstrói o caminho solução para destacar
     caminho_solucao = set(reconstruir_caminho(arvore_map, estado_objetivo_tuple))
 
@@ -129,4 +121,53 @@ def gerar_estado_embaralhado_soluvel(tamanho):
         valido, _ = validar_estado_inicial(estado, tamanho)
         if valido:
             return estado
+
+def plotar_arvore_networkx(arvore_map, estado_objetivo_tuple, tamanho):
+    """
+    Gera um grafo visual da árvore de busca usando networkx + matplotlib.
+    """
+
+    # Reconstrói caminho da solução
+    caminho_solucao = set(reconstruir_caminho(arvore_map, estado_objetivo_tuple))
+
+    # Cria grafo
+    G = nx.DiGraph()
+
+    # Adiciona nós e arestas
+    for filho, pai in arvore_map.items():
+        label_filho = "\n".join(
+            " ".join(f"{n:2}" if n != 0 else "  " for n in filho[i * tamanho:(i + 1) * tamanho])
+            for i in range(tamanho)
+        )
+        G.add_node(filho, label=label_filho)
+
+        if pai is not None:
+            G.add_edge(pai, filho)
+
+    # Define posição hierárquica dos nós
+    try:
+        pos = nx.nx_agraph.graphviz_layout(G, prog='dot')  # usa layout do graphviz (se instalado)
+    except:
+        pos = nx.spring_layout(G)  # fallback: spring layout
+
+    plt.figure(figsize=(12, 8))
+
+    # Cores: destaca caminho da solução
+    color_map = []
+    for node in G.nodes():
+        if node in caminho_solucao:
+            color_map.append('lightgreen')  # nós do caminho em verde
+        else:
+            color_map.append('lightgray')   # outros nós em cinza
+
+    nx.draw_networkx_nodes(G, pos, node_color=color_map, node_size=1200)
+    nx.draw_networkx_edges(G, pos, arrows=True)
+
+    labels = nx.get_node_attributes(G, 'label')
+    nx.draw_networkx_labels(G, pos, labels, font_size=8, font_family="monospace")
+
+    plt.title("Árvore de Busca - n-Puzzle", fontsize=14)
+    plt.axis('off')
+    plt.tight_layout()
+    plt.show()
 
