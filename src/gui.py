@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext
 from uninformed_searches import bfs, dfs, ids
 from informed_searches import a_estrela, gulosa
-from utils import validar_estado_inicial, gerar_estado_objetivo, gerar_estado_embaralhado_soluvel, reconstruir_caminho, plotar_arvore_networkx
+from utils import validar_estado_inicial, gerar_estado_objetivo, gerar_estado_embaralhado_soluvel, reconstruir_caminho, gerar_arvore_busca
 
 class NPuzzleGUI(tk.Tk):
     def __init__(self):
@@ -84,22 +84,23 @@ class NPuzzleGUI(tk.Tk):
 
         self.tab_resultados = ttk.Frame(self.tabs)
         self.tab_caminho = ttk.Frame(self.tabs)
+        self.tab_arvore = ttk.Frame(self.tabs)
         self.tab_comparativo = ttk.Frame(self.tabs)
 
         self.tabs.add(self.tab_resultados, text="Resultados")
         self.tabs.add(self.tab_caminho, text="Caminho até a solução")
+        self.tabs.add(self.tab_arvore, text="Árvore de Busca")
         self.tabs.add(self.tab_comparativo, text="Comparativo")
         self.tabs.pack(expand=True, fill="both")
 
         self.txt_resultados = scrolledtext.ScrolledText(self.tab_resultados, width=110, height=15, font=("Consolas", 10))
         self.txt_resultados.pack(padx=5, pady=5)
 
-        # Botão para Visualizar Árvore
-        btn_plotar_arvore = ttk.Button(self.tab_resultados, text="Visualizar Árvore", command= lambda: plotar_arvore_networkx(self.arvore_atual, self.estado_objetivo_atual, self.tamanho_atual))
-        btn_plotar_arvore.pack(pady=5)
-
         self.txt_caminho = scrolledtext.ScrolledText(self.tab_caminho, width=110, height=30, font=("Consolas", 10))
         self.txt_caminho.pack(padx=5, pady=5, fill="both", expand=True)
+
+        self.txt_arvore = scrolledtext.ScrolledText(self.tab_arvore, width=110, height=30, font=("Consolas", 10))
+        self.txt_arvore.pack(padx=5, pady=5, fill="both", expand=True)
 
         self.tree_comp = ttk.Treeview(self.tab_comparativo, columns=("Algoritmo", "Heurística", "Tempo", "Nós", "Profundidade"), show="headings")
         for col in self.tree_comp["columns"]:
@@ -187,6 +188,7 @@ class NPuzzleGUI(tk.Tk):
     def executar_busca(self):
         self.txt_resultados.delete("1.0", tk.END)
         self.txt_caminho.delete("1.0", tk.END)
+        self.txt_arvore.delete("1.0", tk.END)
 
         tamanho = int(self.combo_tamanho.get().split("(")[1][0])
         estado_inicial = self.ler_estado_inicial()
@@ -230,8 +232,8 @@ class NPuzzleGUI(tk.Tk):
 
             if resultado is None:
                 self.txt_resultados.insert(tk.END, "Nenhuma solução encontrada.\n")
-                self.txt_caminho.delete("1.0", tk.END)
                 self.txt_caminho.insert(tk.END, "Sem solução encontrada.\n")
+                self.txt_arvore.insert(tk.END, "Árvore não disponível.\n")
                 continue
 
             caminho_mov, tempo, nos_expandidos, profundidade, arvore_txt, arvore, estado_objetivo_tuple = resultado
@@ -244,8 +246,6 @@ class NPuzzleGUI(tk.Tk):
 
             resultados_comp.append((alg_nome, heuristica_nome if alg_nome in ["A*", "Gulosa"] else "-", f"{tempo:.4f}", nos_expandidos, profundidade))
 
-            self.txt_caminho.delete("1.0", tk.END)
-
             passo_str = ""
             for i, estado in enumerate(reconstruir_caminho(arvore, estado_objetivo_tuple)):
                 passo_str += f"*** Passo {i} ***\n"
@@ -256,10 +256,8 @@ class NPuzzleGUI(tk.Tk):
 
             self.txt_caminho.insert(tk.END, passo_str)
 
-            # Salva variáveis para o botão "Visualizar Árvore"
-            self.arvore_atual = arvore
-            self.estado_objetivo_atual = estado_objetivo_tuple
-            self.tamanho_atual = tamanho
+            arvore_str = gerar_arvore_busca(arvore, estado_objetivo_tuple, tamanho)
+            self.txt_arvore.insert(tk.END, arvore_str)
 
         for i in self.tree_comp.get_children():
             self.tree_comp.delete(i)
