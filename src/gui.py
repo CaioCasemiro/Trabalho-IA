@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext
 from uninformed_searches import bfs, dfs, ids
 from informed_searches import a_estrela, gulosa
-from utils import validar_estado_inicial, gerar_estado_objetivo, gerar_estado_embaralhado_soluvel, reconstruir_caminho, gerar_arvore_busca
+from utils import validar_estado_inicial, gerar_estado_objetivo, gerar_estado_embaralhado_soluvel, reconstruir_caminho
 
 class NPuzzleGUI(tk.Tk):
     def __init__(self):
@@ -84,12 +84,10 @@ class NPuzzleGUI(tk.Tk):
 
         self.tab_resultados = ttk.Frame(self.tabs)
         self.tab_caminho = ttk.Frame(self.tabs)
-        self.tab_arvore = ttk.Frame(self.tabs)
         self.tab_comparativo = ttk.Frame(self.tabs)
 
         self.tabs.add(self.tab_resultados, text="Resultados")
         self.tabs.add(self.tab_caminho, text="Caminho até a solução")
-        self.tabs.add(self.tab_arvore, text="Árvore de Busca")
         self.tabs.add(self.tab_comparativo, text="Comparativo")
         self.tabs.pack(expand=True, fill="both")
 
@@ -98,9 +96,6 @@ class NPuzzleGUI(tk.Tk):
 
         self.txt_caminho = scrolledtext.ScrolledText(self.tab_caminho, width=110, height=30, font=("Consolas", 10))
         self.txt_caminho.pack(padx=5, pady=5, fill="both", expand=True)
-
-        self.txt_arvore = scrolledtext.ScrolledText(self.tab_arvore, width=110, height=30, font=("Consolas", 10))
-        self.txt_arvore.pack(padx=5, pady=5, fill="both", expand=True)
 
         self.tree_comp = ttk.Treeview(self.tab_comparativo, columns=("Algoritmo", "Heurística", "Tempo", "Nós", "Profundidade"), show="headings")
         for col in self.tree_comp["columns"]:
@@ -188,7 +183,6 @@ class NPuzzleGUI(tk.Tk):
     def executar_busca(self):
         self.txt_resultados.delete("1.0", tk.END)
         self.txt_caminho.delete("1.0", tk.END)
-        self.txt_arvore.delete("1.0", tk.END)
 
         tamanho = int(self.combo_tamanho.get().split("(")[1][0])
         estado_inicial = self.ler_estado_inicial()
@@ -220,7 +214,7 @@ class NPuzzleGUI(tk.Tk):
         resultados_comp = []
 
         for alg_nome in selecionados:
-            self.txt_resultados.insert(tk.END, f"\n=== {alg_nome} ===\n")
+            self.txt_resultados.insert(tk.END, f"\n==== {alg_nome} ====\n")
             func = self.algoritmos[alg_nome]
 
             if alg_nome in ["A*", "Gulosa"]:
@@ -232,11 +226,10 @@ class NPuzzleGUI(tk.Tk):
 
             if resultado is None:
                 self.txt_resultados.insert(tk.END, "Nenhuma solução encontrada.\n")
-                self.txt_caminho.insert(tk.END, "Sem solução encontrada.\n")
-                self.txt_arvore.insert(tk.END, "Árvore não disponível.\n")
+                self.txt_caminho.insert(tk.END, f"==== {alg_nome} ====\nSem solução encontrada.\n")
                 continue
 
-            caminho_mov, tempo, nos_expandidos, profundidade, arvore_txt, arvore, estado_objetivo_tuple = resultado
+            caminho_mov, tempo, nos_expandidos, profundidade, _, arvore, estado_objetivo_tuple = resultado
 
             self.txt_resultados.insert(tk.END, f"Tempo de execução: {tempo:.4f} s\n")
             self.txt_resultados.insert(tk.END, f"Nós expandidos: {nos_expandidos}\n")
@@ -246,18 +239,13 @@ class NPuzzleGUI(tk.Tk):
 
             resultados_comp.append((alg_nome, heuristica_nome if alg_nome in ["A*", "Gulosa"] else "-", f"{tempo:.4f}", nos_expandidos, profundidade))
 
-            passo_str = ""
+            self.txt_caminho.insert(tk.END, f"\n==== {alg_nome} ====\n")
             for i, estado in enumerate(reconstruir_caminho(arvore, estado_objetivo_tuple)):
-                passo_str += f"*** Passo {i} ***\n"
+                self.txt_caminho.insert(tk.END, f"*** Passo {i} ***\n")
                 for j in range(tamanho):
                     linha = estado[j * tamanho:(j + 1) * tamanho]
-                    passo_str += " ".join(f"{n:2}" if n != 0 else "  " for n in linha) + "\n"
-                passo_str += "-" * 30 + "\n"
-
-            self.txt_caminho.insert(tk.END, passo_str)
-
-            arvore_str = gerar_arvore_busca(arvore, estado_objetivo_tuple, tamanho)
-            self.txt_arvore.insert(tk.END, arvore_str)
+                    self.txt_caminho.insert(tk.END, " ".join(f"{n:2}" if n != 0 else "  " for n in linha) + "\n")
+                self.txt_caminho.insert(tk.END, "-" * 30 + "\n")
 
         for i in self.tree_comp.get_children():
             self.tree_comp.delete(i)
