@@ -1,4 +1,6 @@
 import random
+import matplotlib.pyplot as plt
+import networkx as nx
 
 def exibir_caminho_com_estados(estado_final, tamanho_lado):
     caminho = []
@@ -121,3 +123,66 @@ def gerar_estado_embaralhado_soluvel(tamanho):
         valido, _ = validar_estado_inicial(estado, tamanho)
         if valido:
             return estado
+
+def plotar_arvore_networkx_limitada(arvore_map, estado_objetivo_tuple, tamanho, limite=50):
+
+    caminho_solucao = reconstruir_caminho(arvore_map, estado_objetivo_tuple)
+    caminho_set = set(caminho_solucao)
+
+    G = nx.DiGraph()
+    contador = 0
+    adicionados = set()
+
+    # Adiciona o caminho da solução completo
+    for i in range(len(caminho_solucao) - 1):
+        pai = caminho_solucao[i]
+        filho = caminho_solucao[i + 1]
+        if pai not in adicionados:
+            G.add_node(pai)
+            adicionados.add(pai)
+        if filho not in adicionados:
+            G.add_node(filho)
+            adicionados.add(filho)
+        G.add_edge(pai, filho)
+
+    # Adiciona outros nós até atingir o limite
+    for filho, pai in arvore_map.items():
+        if filho in caminho_set:
+            continue  # já foi adicionado
+        if contador >= limite:
+            break
+        if pai is None or pai in caminho_set:
+            G.add_node(filho)
+            if pai:
+                G.add_edge(pai, filho)
+            contador += 1
+
+    # Layout
+    try:
+        pos = nx.nx_agraph.graphviz_layout(G, prog='dot')
+    except:
+        pos = nx.spring_layout(G, seed=42)
+
+    # Cores
+    cores = []
+    for n in G.nodes():
+        if n in caminho_set:
+            cores.append("lightgreen")
+        else:
+            cores.append("lightgray")
+
+    # Labels
+    labels = {
+        no: "\n".join(
+            " ".join(f"{n:2}" if n != 0 else "  " for n in no[i * tamanho:(i + 1) * tamanho])
+            for i in range(tamanho)
+        ) for no in G.nodes()
+    }
+
+    # Desenho
+    plt.figure(figsize=(12, 8))
+    nx.draw(G, pos, labels=labels, node_size=1200, node_color=cores, font_size=8, font_family="monospace", arrows=True)
+    plt.title(f"Árvore de Busca (limitada a {limite} nós adicionais)", fontsize=14)
+    plt.axis('off')
+    plt.tight_layout()
+    plt.show()
