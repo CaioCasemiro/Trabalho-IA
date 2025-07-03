@@ -1,6 +1,8 @@
 import random
 import matplotlib.pyplot as plt
 import networkx as nx
+from collections import deque
+import numpy as np
 
 def exibir_caminho_com_estados(estado_final, tamanho_lado):
     caminho = []
@@ -33,10 +35,6 @@ def formatar_estado(estado, tamanho):
     return " | ".join(linhas)
 
 def gerar_arvore_busca(arvore_map, estado_objetivo_tuple, tamanho, movimentos=None):
-    """
-    Gera uma representação textual da árvore de busca,
-    destacando o caminho da solução com "***".
-    """
     caminho_solucao = set(reconstruir_caminho(arvore_map, estado_objetivo_tuple))
     filhos_por_pai = {}
     for filho, pai in arvore_map.items():
@@ -124,65 +122,71 @@ def gerar_estado_embaralhado_soluvel(tamanho):
         if valido:
             return estado
 
+def hierarchy_pos(G, root=None, width=1., vert_gap=0.2, vert_loc=0, xcenter=0.5, pos=None, parent=None):
+    if pos is None:
+        pos = {root: (xcenter, vert_loc)}
+    else:
+        pos[root] = (xcenter, vert_loc)
+
+    filhos = list(G.successors(root))
+    if len(filhos) != 0:
+        dx = width / len(filhos)
+        nextx = xcenter - width / 2 - dx / 2
+        for filho in filhos:
+            nextx += dx
+            pos = hierarchy_pos(G, filho, width=dx, vert_gap=vert_gap,
+                                vert_loc=vert_loc - vert_gap, xcenter=nextx, pos=pos, parent=root)
+    return pos
+
 def plotar_arvore_networkx_limitada(arvore_map, estado_objetivo_tuple, tamanho, limite=50):
-
-    caminho_solucao = reconstruir_caminho(arvore_map, estado_objetivo_tuple)
-    caminho_set = set(caminho_solucao)
-
     G = nx.DiGraph()
-    contador = 0
-    adicionados = set()
+    visitados = set()
+    fila = deque()
+    contador_nos = 0
 
-    # Adiciona o caminho da solução completo
-    for i in range(len(caminho_solucao) - 1):
-        pai = caminho_solucao[i]
-        filho = caminho_solucao[i + 1]
-        if pai not in adicionados:
-            G.add_node(pai)
-            adicionados.add(pai)
-        if filho not in adicionados:
-            G.add_node(filho)
-            adicionados.add(filho)
-        G.add_edge(pai, filho)
+    caminho_solucao = set()
+    atual = estado_objetivo_tuple
+    while atual:
+        caminho_solucao.add(atual)
+        atual = arvore_map.get(atual)
 
-    # Adiciona outros nós até atingir o limite
-    for filho, pai in arvore_map.items():
-        if filho in caminho_set:
-            continue  # já foi adicionado
-        if contador >= limite:
-            break
-        if pai is None or pai in caminho_set:
-            G.add_node(filho)
-            if pai:
-                G.add_edge(pai, filho)
-            contador += 1
+    raiz = next((n for n, p in arvore_map.items() if p is None), None)
+    if raiz is None:
+        print("Árvore vazia.")
+        return
 
-    # Layout
-    try:
-        pos = nx.nx_agraph.graphviz_layout(G, prog='dot')
-    except:
-        pos = nx.spring_layout(G, seed=42)
+    fila.append(raiz)
+    visitados.add(raiz)
 
-    # Cores
-    cores = []
-    for n in G.nodes():
-        if n in caminho_set:
-            cores.append("lightgreen")
-        else:
-            cores.append("lightgray")
+    while fila and contador_nos < limite:
+        no = fila.popleft()
+        contador_nos += 1
+        G.add_node(no)
+        for filho, pai in arvore_map.items():
+            if pai == no and filho not in visitados:
+                G.add_edge(no, filho)
+                fila.append(filho)
+                visitados.add(filho)
+                if contador_nos >= limite:
+                    break
 
-    # Labels
     labels = {
-        no: "\n".join(
-            " ".join(f"{n:2}" if n != 0 else "  " for n in no[i * tamanho:(i + 1) * tamanho])
+        node: "\n".join(
+            " ".join(f"{n:2}" if n != 0 else "  " for n in node[i*tamanho:(i+1)*tamanho])
             for i in range(tamanho)
-        ) for no in G.nodes()
+        ) for node in G.nodes
     }
 
-    # Desenho
-    plt.figure(figsize=(12, 8))
-    nx.draw(G, pos, labels=labels, node_size=1200, node_color=cores, font_size=8, font_family="monospace", arrows=True)
-    plt.title(f"Árvore de Busca (limitada a {limite} nós adicionais)", fontsize=14)
+    pos = hierarchy_pos(G, root=raiz)
+
+    plt.figure(figsize=(20, 14))
+    color_map = ['lightgreen' if node in caminho_solucao else 'lightgray' for node in G.nodes]
+
+    nx.draw_networkx_nodes(G, pos, node_color=color_map, node_size=1500)
+    nx.draw_networkx_edges(G, pos, arrows=True, arrowstyle='->', arrowsize=15)
+    nx.draw_networkx_labels(G, pos, labels=labels, font_size=7, font_family='monospace')
+
+    plt.title("Árvore de Busca (limitada)", fontsize=16)
     plt.axis('off')
     plt.tight_layout()
     plt.show()
