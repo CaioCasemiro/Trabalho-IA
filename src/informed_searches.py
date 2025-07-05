@@ -3,90 +3,100 @@ from heuristics import pecas_fora_do_lugar, distancia_manhattan
 from utils import exibir_caminho_com_estados
 import heapq, time
 
+MAX_NOS = 1_000_000  # Limite de nós expandidos
+
 def a_estrela(estado_inicial, objetivo, tamanho_lado, heuristica_escolhida, gui_mode=False):
     def escolher_heuristica(estado, objetivo, heuristica_escolhida):
-        if heuristica_escolhida == 1:
-            return pecas_fora_do_lugar(estado, objetivo)
-        else:
-            return distancia_manhattan(estado, objetivo)
+        return pecas_fora_do_lugar(estado, objetivo) if heuristica_escolhida == 1 else distancia_manhattan(estado, objetivo)
+
     inicio = time.time()
     estado_inicial_obj = PuzzleState(estado_inicial)
     fronteira = []
     heapq.heappush(fronteira, (0, estado_inicial_obj))
-    visitados = set()
-    visitados.add(tuple(estado_inicial))
+
+    custo_estado = {tuple(estado_inicial): 0}
     nos_expandidos = 0
     arvore = {tuple(estado_inicial): None}
 
     while fronteira:
-        _, estado_atual = heapq.heappop(fronteira)
+        prioridade_atual, estado_atual = heapq.heappop(fronteira)
+        estado_tuple = tuple(estado_atual.estado)
+        custo_g_atual = custo_estado.get(estado_tuple, float('inf'))
+
+        heuristica_atual = escolher_heuristica(estado_atual.estado, objetivo, heuristica_escolhida)
+        if prioridade_atual > custo_g_atual + heuristica_atual:
+            continue
+
         nos_expandidos += 1
+        if nos_expandidos > MAX_NOS:
+            fim = time.time()
+            return None, fim - inicio, nos_expandidos, 0, "", arvore, None
+
         if estado_atual.is_objetivo(objetivo):
             fim = time.time()
             caminho = estado_atual.caminho()
             profundidade = estado_atual.profundidade
-            tempo_exec = fim - inicio
-            if gui_mode:
-                return (caminho, tempo_exec, nos_expandidos, profundidade, "", arvore, tuple(estado_atual.estado))
-            print("Objetivo alcançado!")
-            print("Sequência de movimentos:", caminho)
-            print("Profundidade da solução:", profundidade)
-            print("Nós expandidos:", nos_expandidos)
-            print(exibir_caminho_com_estados(estado_atual, tamanho_lado))
-            return
+            caminho_estados = exibir_caminho_com_estados(estado_atual, tamanho_lado)
+            return caminho, fim - inicio, nos_expandidos, profundidade, caminho_estados, arvore, estado_tuple
+
         filhos = estado_atual.gerar_filhos(tamanho_lado)
         for filho in filhos:
-            estado_tuple = tuple(filho.estado)
-            if estado_tuple not in visitados:
-                visitados.add(estado_tuple)
-                custo_real = filho.profundidade
-                heuristica = escolher_heuristica(filho.estado, objetivo, heuristica_escolhida)
-                prioridade = custo_real + heuristica
+            filho_tuple = tuple(filho.estado)
+            custo_g_filho = filho.profundidade
+
+            if custo_g_filho < custo_estado.get(filho_tuple, float('inf')):
+                custo_estado[filho_tuple] = custo_g_filho
+                heuristica_filho = escolher_heuristica(filho.estado, objetivo, heuristica_escolhida)
+                prioridade = custo_g_filho + heuristica_filho
                 heapq.heappush(fronteira, (prioridade, filho))
-                arvore[estado_tuple] = tuple(estado_atual.estado)
-    if gui_mode:
-        return None
-    print("Nenhuma solução encontrada.")
+                arvore[filho_tuple] = estado_tuple
+
+    fim = time.time()
+    return None, fim - inicio, nos_expandidos, 0, "", arvore, None
+
 
 def gulosa(estado_inicial, objetivo, tamanho_lado, heuristica_escolhida, gui_mode=False):
     def escolher_heuristica(estado, objetivo, heuristica_escolhida):
-        if heuristica_escolhida == 1:
-            return pecas_fora_do_lugar(estado, objetivo)
-        else:
-            return distancia_manhattan(estado, objetivo)
+        return pecas_fora_do_lugar(estado, objetivo) if heuristica_escolhida == 1 else distancia_manhattan(estado, objetivo)
+
     inicio = time.time()
     estado_inicial_obj = PuzzleState(estado_inicial)
     fronteira = []
     heapq.heappush(fronteira, (0, estado_inicial_obj))
+
     visitados = set()
-    visitados.add(tuple(estado_inicial))
+    custo_estado = {tuple(estado_inicial): 0}
     nos_expandidos = 0
     arvore = {tuple(estado_inicial): None}
 
     while fronteira:
-        _, estado_atual = heapq.heappop(fronteira)
+        prioridade_atual, estado_atual = heapq.heappop(fronteira)
+        estado_tuple = tuple(estado_atual.estado)
+
+        if estado_tuple in visitados:
+            continue
+        visitados.add(estado_tuple)
+
         nos_expandidos += 1
+        if nos_expandidos > MAX_NOS:
+            fim = time.time()
+            return None, fim - inicio, nos_expandidos, 0, "", arvore, None
+
         if estado_atual.is_objetivo(objetivo):
             fim = time.time()
             caminho = estado_atual.caminho()
             profundidade = estado_atual.profundidade
-            tempo_exec = fim - inicio
-            if gui_mode:
-                return (caminho, tempo_exec, nos_expandidos, profundidade, "", arvore, tuple(estado_atual.estado))
-            print("Objetivo alcançado!")
-            print("Sequência de movimentos:", caminho)
-            print("Profundidade da solução:", profundidade)
-            print("Nós expandidos:", nos_expandidos)
-            print(exibir_caminho_com_estados(estado_atual, tamanho_lado))
-            return
+            caminho_estados = exibir_caminho_com_estados(estado_atual, tamanho_lado)
+            return caminho, fim - inicio, nos_expandidos, profundidade, caminho_estados, arvore, estado_tuple
+
         filhos = estado_atual.gerar_filhos(tamanho_lado)
         for filho in filhos:
-            estado_tuple = tuple(filho.estado)
-            if estado_tuple not in visitados:
-                visitados.add(estado_tuple)
+            filho_tuple = tuple(filho.estado)
+            if filho_tuple not in visitados:
+                custo_estado[filho_tuple] = filho.profundidade
                 heuristica = escolher_heuristica(filho.estado, objetivo, heuristica_escolhida)
                 heapq.heappush(fronteira, (heuristica, filho))
-                arvore[estado_tuple] = tuple(estado_atual.estado)
-    if gui_mode:
-        return None
-    print("Nenhuma solução encontrada.")
+                arvore[filho_tuple] = estado_tuple
+
+    fim = time.time()
+    return None, fim - inicio, nos_expandidos, 0, "", arvore, None

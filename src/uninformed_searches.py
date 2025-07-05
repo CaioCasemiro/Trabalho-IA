@@ -3,112 +3,88 @@ from utils import exibir_caminho_com_estados
 import time
 from collections import deque
 
-def bfs(estado_inicial, objetivo, tamanho_lado, gui_mode=False):
+MAX_NOS = 1_000_000
+LIMITE_PROFUNDIDADE_PADRAO = 50
+
+def bfs(estado_inicial, objetivo, tamanho, gui_mode=False):
     inicio = time.time()
     estado_inicial_obj = PuzzleState(estado_inicial)
     fronteira = deque([estado_inicial_obj])
-    visitados = set()
-    visitados.add(tuple(estado_inicial))
+    visitados = set([estado_inicial_obj.estado])
+    arvore = {estado_inicial_obj.estado: None}
     nos_expandidos = 0
-    arvore = {tuple(estado_inicial): None}
 
     while fronteira:
-        estado_atual = fronteira.popleft()
+        atual = fronteira.popleft()
         nos_expandidos += 1
-        if estado_atual.is_objetivo(objetivo):
-            fim = time.time()
-            caminho = estado_atual.caminho()
-            profundidade = estado_atual.profundidade
-            tempo_exec = fim - inicio
-            if gui_mode:
-                return (caminho, tempo_exec, nos_expandidos, profundidade, "", arvore, tuple(estado_atual.estado))
-            print("Objetivo alcançado!")
-            print("Sequência de movimentos:", caminho)
-            print("Profundidade da solução:", profundidade)
-            print("Nós expandidos:", nos_expandidos)
-            print(exibir_caminho_com_estados(estado_atual, tamanho_lado))
-            return
-        filhos = estado_atual.gerar_filhos(tamanho_lado)
-        for filho in filhos:
-            estado_tuple = tuple(filho.estado)
-            if estado_tuple not in visitados:
-                visitados.add(estado_tuple)
-                fronteira.append(filho)
-                arvore[estado_tuple] = tuple(estado_atual.estado)
-    if gui_mode:
-        return None
-    print("Nenhuma solução encontrada.")
+        if nos_expandidos > MAX_NOS:
+            return None, time.time() - inicio, nos_expandidos, 0, "", arvore, None
+        if atual.is_objetivo(objetivo):
+            tempo = time.time() - inicio
+            return atual.caminho(), tempo, nos_expandidos, atual.profundidade, exibir_caminho_com_estados(atual, tamanho), arvore, atual.estado
 
-def dfs(estado_inicial, objetivo, tamanho_lado, limite=50, gui_mode=False):
+        for filho in atual.gerar_filhos(tamanho):
+            if filho.estado not in visitados:
+                fronteira.append(filho)
+                visitados.add(filho.estado)
+                arvore[filho.estado] = atual.estado
+
+    return None, time.time() - inicio, nos_expandidos, 0, "", arvore, None
+
+def dfs(estado_inicial, objetivo, tamanho, limite=LIMITE_PROFUNDIDADE_PADRAO, gui_mode=False):
     inicio = time.time()
     estado_inicial_obj = PuzzleState(estado_inicial)
     pilha = [(estado_inicial_obj, 0)]
-    visitados = set()
-    visitados.add(tuple(estado_inicial))
+    visitados = set([estado_inicial_obj.estado])
+    arvore = {estado_inicial_obj.estado: None}
     nos_expandidos = 0
-    arvore = {tuple(estado_inicial): None}
 
     while pilha:
-        estado_atual, prof = pilha.pop()
+        atual, prof = pilha.pop()
         nos_expandidos += 1
-        if estado_atual.is_objetivo(objetivo):
-            fim = time.time()
-            caminho = estado_atual.caminho()
-            profundidade = estado_atual.profundidade
-            tempo_exec = fim - inicio
-            if gui_mode:
-                return (caminho, tempo_exec, nos_expandidos, profundidade, "", arvore, tuple(estado_atual.estado))
-            print("Objetivo alcançado!")
-            print("Sequência de movimentos:", caminho)
-            print("Profundidade da solução:", profundidade)
-            print("Nós expandidos:", nos_expandidos)
-            print(exibir_caminho_com_estados(estado_atual, tamanho_lado))
-            return
-        if prof < limite:
-            filhos = estado_atual.gerar_filhos(tamanho_lado)
-            for filho in filhos:
-                estado_tuple = tuple(filho.estado)
-                if estado_tuple not in visitados:
-                    visitados.add(estado_tuple)
-                    pilha.append((filho, prof+1))
-                    arvore[estado_tuple] = tuple(estado_atual.estado)
-    if gui_mode:
-        return None
-    print("Nenhuma solução encontrada.")
+        if nos_expandidos > MAX_NOS:
+            return None, time.time() - inicio, nos_expandidos, 0, "", arvore, None
+        if atual.is_objetivo(objetivo):
+            tempo = time.time() - inicio
+            return atual.caminho(), tempo, nos_expandidos, atual.profundidade, exibir_caminho_com_estados(atual, tamanho), arvore, atual.estado
 
-def ids(estado_inicial, objetivo, tamanho_lado, limite=50, gui_mode=False):
+        if prof < limite:
+            for filho in atual.gerar_filhos(tamanho):
+                if filho.estado not in visitados:
+                    pilha.append((filho, prof + 1))
+                    visitados.add(filho.estado)
+                    arvore[filho.estado] = atual.estado
+
+    return None, time.time() - inicio, nos_expandidos, 0, "", arvore, None
+
+def ids(estado_inicial, objetivo, tamanho, limite=LIMITE_PROFUNDIDADE_PADRAO, gui_mode=False):
     inicio = time.time()
-    for profundidade_max in range(limite+1):
-        estado_inicial_obj = PuzzleState(estado_inicial)
-        pilha = [(estado_inicial_obj, 0)]
+    nos_expandidos = 0
+
+    for limite_atual in range(limite + 1):
+        pilha = [(PuzzleState(estado_inicial), 0)]
         visitados = set()
-        visitados.add(tuple(estado_inicial))
-        nos_expandidos = 0
         arvore = {tuple(estado_inicial): None}
+
         while pilha:
-            estado_atual, prof = pilha.pop()
+            atual, prof = pilha.pop()
+            estado = atual.estado
+
+            if estado in visitados:
+                continue
+            visitados.add(estado)
             nos_expandidos += 1
-            if estado_atual.is_objetivo(objetivo):
-                fim = time.time()
-                caminho = estado_atual.caminho()
-                profundidade = estado_atual.profundidade
-                tempo_exec = fim - inicio
-                if gui_mode:
-                    return (caminho, tempo_exec, nos_expandidos, profundidade, "", arvore, tuple(estado_atual.estado))
-                print("Objetivo alcançado!")
-                print("Sequência de movimentos:", caminho)
-                print("Profundidade da solução:", profundidade)
-                print("Nós expandidos:", nos_expandidos)
-                print(exibir_caminho_com_estados(estado_atual, tamanho_lado))
-                return
-            if prof < profundidade_max:
-                filhos = estado_atual.gerar_filhos(tamanho_lado)
-                for filho in filhos:
-                    estado_tuple = tuple(filho.estado)
-                    if estado_tuple not in visitados:
-                        visitados.add(estado_tuple)
-                        pilha.append((filho, prof+1))
-                        arvore[estado_tuple] = tuple(estado_atual.estado)
-    if gui_mode:
-        return None
-    print("Nenhuma solução encontrada.")
+
+            if nos_expandidos > MAX_NOS:
+                return None, time.time() - inicio, nos_expandidos, 0, "", arvore, None
+            if atual.is_objetivo(objetivo):
+                tempo = time.time() - inicio
+                return atual.caminho(), tempo, nos_expandidos, atual.profundidade, exibir_caminho_com_estados(atual, tamanho), arvore, atual.estado
+
+            if prof < limite_atual:
+                for filho in atual.gerar_filhos(tamanho):
+                    if filho.estado not in visitados:
+                        pilha.append((filho, prof + 1))
+                        arvore[filho.estado] = estado
+
+    return None, time.time() - inicio, nos_expandidos, 0, "", arvore, None
