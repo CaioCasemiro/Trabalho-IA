@@ -5,21 +5,28 @@ import sys
 
 def escolher_estado_inicial(tamanho):
     if tamanho == 3:
-        return [1, 2, 3, 4, 0, 5, 6, 7, 8]
+        return [1, 2, 3,
+                4, 0, 5,
+                6, 7, 8]
+
     elif tamanho == 4:
         return [1, 2, 3, 4,
                 5, 6, 7, 8,
                 9, 10, 11, 12,
-                0, 13, 14, 15]
+                13, 14, 15, 0]
+
     elif tamanho == 5:
         return [1, 2, 3, 4, 5,
                 6, 7, 8, 9, 10,
                 11, 12, 13, 14, 15,
-                16, 17, 18, 19, 20,
-                21, 22, 0, 23, 24]
+                16, 17, 18, 19, 0,
+                20, 21, 22, 23, 24]
+
     else:
         print("Tamanho inválido.")
+        import sys
         sys.exit()
+
 
 def main():
     print("Escolha o tamanho do puzzle:")
