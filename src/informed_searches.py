@@ -4,12 +4,14 @@ from utils import exibir_caminho_com_estados
 import heapq, time
 
 MAX_NOS = 1_000_000  # Limite de nós expandidos
+TIMEOUT = 30  # segundos
 
 def a_estrela(estado_inicial, objetivo, tamanho_lado, heuristica_escolhida, gui_mode=False):
     def escolher_heuristica(estado, objetivo, heuristica_escolhida):
         return pecas_fora_do_lugar(estado, objetivo) if heuristica_escolhida == 1 else distancia_manhattan(estado, objetivo)
 
     inicio = time.time()
+    cache_heuristica = {}
     estado_inicial_obj = PuzzleState(estado_inicial)
     fronteira = []
     heapq.heappush(fronteira, (0, estado_inicial_obj))
@@ -19,18 +21,26 @@ def a_estrela(estado_inicial, objetivo, tamanho_lado, heuristica_escolhida, gui_
     arvore = {tuple(estado_inicial): None}
 
     while fronteira:
+        if time.time() - inicio > TIMEOUT:
+            return None, time.time() - inicio, nos_expandidos, 0, "Timeout excedido", arvore, None
         prioridade_atual, estado_atual = heapq.heappop(fronteira)
         estado_tuple = tuple(estado_atual.estado)
         custo_g_atual = custo_estado.get(estado_tuple, float('inf'))
 
-        heuristica_atual = escolher_heuristica(estado_atual.estado, objetivo, heuristica_escolhida)
+        # Usar cache para heurística
+        if estado_tuple in cache_heuristica:
+            heuristica_atual = cache_heuristica[estado_tuple]
+        else:
+            heuristica_atual = escolher_heuristica(estado_atual.estado, objetivo, heuristica_escolhida)
+            cache_heuristica[estado_tuple] = heuristica_atual
+
         if prioridade_atual > custo_g_atual + heuristica_atual:
             continue
 
         nos_expandidos += 1
         if nos_expandidos > MAX_NOS:
             fim = time.time()
-            return None, fim - inicio, nos_expandidos, 0, "", arvore, None
+            return None, fim - inicio, nos_expandidos, 0, "Limite de nós excedido", arvore, None
 
         if estado_atual.is_objetivo(objetivo):
             fim = time.time()
@@ -46,14 +56,18 @@ def a_estrela(estado_inicial, objetivo, tamanho_lado, heuristica_escolhida, gui_
 
             if custo_g_filho < custo_estado.get(filho_tuple, float('inf')):
                 custo_estado[filho_tuple] = custo_g_filho
-                heuristica_filho = escolher_heuristica(filho.estado, objetivo, heuristica_escolhida)
+                # Calcular ou usar cache para heurística do filho
+                if filho_tuple in cache_heuristica:
+                    heuristica_filho = cache_heuristica[filho_tuple]
+                else:
+                    heuristica_filho = escolher_heuristica(filho.estado, objetivo, heuristica_escolhida)
+                    cache_heuristica[filho_tuple] = heuristica_filho
                 prioridade = custo_g_filho + heuristica_filho
                 heapq.heappush(fronteira, (prioridade, filho))
                 arvore[filho_tuple] = estado_tuple
 
     fim = time.time()
-    return None, fim - inicio, nos_expandidos, 0, "", arvore, None
-
+    return None, fim - inicio, nos_expandidos, 0, "Solução não encontrada", arvore, None
 
 def gulosa(estado_inicial, objetivo, tamanho_lado, heuristica_escolhida, gui_mode=False):
     def escolher_heuristica(estado, objetivo, heuristica_escolhida):
@@ -70,6 +84,8 @@ def gulosa(estado_inicial, objetivo, tamanho_lado, heuristica_escolhida, gui_mod
     arvore = {tuple(estado_inicial): None}
 
     while fronteira:
+        if time.time() - inicio > TIMEOUT:
+            return None, time.time() - inicio, nos_expandidos, 0, "Timeout excedido", arvore, None
         prioridade_atual, estado_atual = heapq.heappop(fronteira)
         estado_tuple = tuple(estado_atual.estado)
 
@@ -80,7 +96,7 @@ def gulosa(estado_inicial, objetivo, tamanho_lado, heuristica_escolhida, gui_mod
         nos_expandidos += 1
         if nos_expandidos > MAX_NOS:
             fim = time.time()
-            return None, fim - inicio, nos_expandidos, 0, "", arvore, None
+            return None, fim - inicio, nos_expandidos, 0, "Limite de nós excedido", arvore, None
 
         if estado_atual.is_objetivo(objetivo):
             fim = time.time()
@@ -99,4 +115,4 @@ def gulosa(estado_inicial, objetivo, tamanho_lado, heuristica_escolhida, gui_mod
                 arvore[filho_tuple] = estado_tuple
 
     fim = time.time()
-    return None, fim - inicio, nos_expandidos, 0, "", arvore, None
+    return None, fim - inicio, nos_expandidos, 0, "Solução não encontrada", arvore, None

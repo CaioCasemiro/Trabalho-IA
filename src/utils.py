@@ -17,11 +17,29 @@ def exibir_caminho_com_estados(estado_final, tamanho_lado):
         atual = atual.pai
     caminho.reverse()
     saida = "\n--- Caminho de estados (do inicial ao objetivo) ---"
-    for idx, estado in enumerate(caminho):
-        saida += f"\nPasso {idx}: Movimento = {estado.movimento}"
-        for i in range(tamanho_lado):
-            linha = estado.estado[i * tamanho_lado: (i + 1) * tamanho_lado]
-            saida += "\n" + " ".join(str(n).rjust(2) if n != 0 else "  " for n in linha)
+    # Limitar a exibição a 50 passos
+    if len(caminho) > 50:
+        saida += f"\n[Caminho truncado: {len(caminho)} passos, exibindo os primeiros e últimos 25]"
+        # Exibir primeiros 25
+        for idx, estado in enumerate(caminho[:25]):
+            saida += f"\nPasso {idx}: Movimento = {estado.movimento}"
+            for i in range(tamanho_lado):
+                linha = estado.estado[i * tamanho_lado: (i + 1) * tamanho_lado]
+                saida += "\n" + " ".join(str(n).rjust(2) if n != 0 else "  " for n in linha)
+        # Exibir ... para indicar truncamento
+        saida += "\n... [caminho intermediário omitido] ..."
+        # Exibir últimos 25
+        for idx, estado in enumerate(caminho[-25:], start=len(caminho)-25):
+            saida += f"\nPasso {idx}: Movimento = {estado.movimento}"
+            for i in range(tamanho_lado):
+                linha = estado.estado[i * tamanho_lado: (i + 1) * tamanho_lado]
+                saida += "\n" + " ".join(str(n).rjust(2) if n != 0 else "  " for n in linha)
+    else:
+        for idx, estado in enumerate(caminho):
+            saida += f"\nPasso {idx}: Movimento = {estado.movimento}"
+            for i in range(tamanho_lado):
+                linha = estado.estado[i * tamanho_lado: (i + 1) * tamanho_lado]
+                saida += "\n" + " ".join(str(n).rjust(2) if n != 0 else "  " for n in linha)
     return saida
 
 
@@ -126,8 +144,8 @@ def validar_estado_inicial(estado, tamanho):
     return True, ""
 
 
-
 def gerar_estado_embaralhado_soluvel(tamanho):
+    """Gera um estado inicial solucionável para o puzzle de tamanho NxN."""
     objetivo = gerar_estado_objetivo(tamanho)
     while True:
         estado = objetivo[:]

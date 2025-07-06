@@ -1,16 +1,22 @@
 class PuzzleState:
-    __slots__ = ('estado', 'pai', 'movimento', 'profundidade')
+    __slots__ = ('estado', 'pai', 'movimento', 'profundidade', '_filhos')
 
     def __init__(self, estado, pai=None, movimento=None, profundidade=0):
-        self.estado = tuple(estado)  # imutável → otimiza hash/comparações
+        self.estado = tuple(estado)  
         self.pai = pai
         self.movimento = movimento
         self.profundidade = profundidade
+        self._filhos = None  # Cache para filhos
 
     def get_posicao_vazia(self):
         return self.estado.index(0)
 
     def gerar_filhos(self, tamanho_lado):
+        if self._filhos is None:
+            self._filhos = self._calcular_filhos(tamanho_lado)
+        return self._filhos
+
+    def _calcular_filhos(self, tamanho_lado):
         filhos = []
         idx = self.get_posicao_vazia()
         linha, col = divmod(idx, tamanho_lado)
@@ -28,7 +34,6 @@ class PuzzleState:
                 novo_estado = list(self.estado)
                 novo_estado[idx], novo_estado[novo_idx] = novo_estado[novo_idx], novo_estado[idx]
                 filhos.append(PuzzleState(novo_estado, self, move, self.profundidade + 1))
-
         return filhos
 
     def is_objetivo(self, objetivo):
