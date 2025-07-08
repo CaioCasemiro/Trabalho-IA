@@ -66,9 +66,9 @@ O objetivo principal é encontrar a sequência de movimentos que transforma uma 
 
 ### Pré-requisitos
 
-- [cite_start]**Python 3.8 ou superior** (Testado e recomendado com Python 3.12.0) [cite: 96]
+- **Python 3.8 ou superior** (Testado e recomendado com Python 3.12.0) [cite: 96]
 - **Tkinter** (geralmente já incluso na instalação padrão do Python)
-- [cite_start]Não são necessárias bibliotecas externas além das padrão do Python. [cite: 98, 99]
+- Não são necessárias bibliotecas externas além das padrão do Python. [cite: 98, 99]
 
 ### Instalação e Execução
 
@@ -113,12 +113,12 @@ SeuRepositorioPuzzleSolver/
 
 ### Seleção do Puzzle
 
-- Escolha o tamanho do puzzle (3x3 para 8-Puzzle, 4x4 para 15-Puzzle, 5x5 para 24-Puzzle) no menu suspenso "Tamanho do Puzzle". [cite_start]A grade de entrada será ajustada automaticamente.
+- Escolha o tamanho do puzzle (3x3 para 8-Puzzle, 4x4 para 15-Puzzle, 5x5 para 24-Puzzle) no menu suspenso "Tamanho do Puzzle". A grade de entrada será ajustada automaticamente.
 
 ### Inserção do Estado Inicial
 
-- [cite_start]Preencha manualmente cada célula da grade de "Estado Inicial" com os números do estado desejado (0 representa o espaço vazio).
-- [cite_start]Alternativamente, clique no botão **"Embaralhar"** para gerar um estado inicial solúvel aleatoriamente.
+- Preencha manualmente cada célula da grade de "Estado Inicial" com os números do estado desejado (0 representa o espaço vazio).
+- Alternativamente, clique no botão **"Embaralhar"** para gerar um estado inicial solúvel aleatoriamente.
 
 ### Escolha do Algoritmo e Heurística
 
@@ -132,34 +132,34 @@ SeuRepositorioPuzzleSolver/
 - Clique em **"Iniciar Busca"** para executar o algoritmo selecionado.
 - Durante a execução, um cronômetro será exibido.
 - Ao finalizar, os resultados aparecerão na área de texto, incluindo:
-  - [cite_start]O caminho da solução, mostrando cada passo e o estado do tabuleiro correspondente.
-  - [cite_start]Tempo de execução em segundos, milissegundos e nanossegundos. 
-  - [cite_start]Número de nós expandidos durante a busca. 
-  - [cite_start]Profundidade da solução (número de movimentos). 
-  - [cite_start]A sequência de movimentos (e.g., 'cima', 'baixo', 'esquerda', 'direita').
+  - O caminho da solução, mostrando cada passo e o estado do tabuleiro correspondente.
+  - Tempo de execução em segundos, milissegundos e nanossegundos. 
+  - Número de nós expandidos durante a busca. 
+  - Profundidade da solução (número de movimentos). 
+  - A sequência de movimentos (e.g., 'cima', 'baixo', 'esquerda', 'direita').
 
 ### Comparação de Algoritmos
 
 - Para comparar algoritmos, você pode executar diferentes buscas para o mesmo estado inicial.
-- [cite_start]As métricas de desempenho serão exibidas na área de resultado, permitindo a comparação manual ou a coleta de dados para tabelas externas, como as apresentadas no relatório. 
+- As métricas de desempenho serão exibidas na área de resultado, permitindo a comparação manual ou a coleta de dados para tabelas externas, como as apresentadas no relatório. 
 
 ---
 
 ## Detalhes Técnicos
 
-- [cite_start]**Representação dos Estados:** Cada estado do tabuleiro é representado internamente como uma tupla unidimensional de inteiros, com 0 representando o espaço vazio.
-- [cite_start]**Custo da Ação:** Cada movimento da peça vazia é considerado um custo uniforme de 1.
-- [cite_start]**Condição de Objetivo:** A busca termina quando o estado atual do tabuleiro é idêntico ao estado objetivo predefinido (números em ordem crescente com 0 na última posição).
-- [cite_start]**Validação de Solubilidade:** O sistema inclui lógica para validar se um estado inicial é solúvel, impedindo a execução de puzzles insolúveis.
-- [cite_start]**Limites de Busca:** Para gerenciar a complexidade e evitar execuções excessivamente longas, os algoritmos têm limites definidos para o número máximo de nós a expandir (1.000.000) e um tempo limite (30 segundos).
+- **Representação dos Estados:** Cada estado do tabuleiro é representado internamente como uma tupla unidimensional de inteiros, com 0 representando o espaço vazio.
+- **Custo da Ação:** Cada movimento da peça vazia é considerado um custo uniforme de 1.
+- **Condição de Objetivo:** A busca termina quando o estado atual do tabuleiro é idêntico ao estado objetivo predefinido (números em ordem crescente com 0 na última posição).
+- **Validação de Solubilidade:** O sistema inclui lógica para validar se um estado inicial é solúvel, impedindo a execução de puzzles insolúveis.
+- **Limites de Busca:** Para gerenciar a complexidade e evitar execuções excessivamente longas, os algoritmos têm limites definidos para o número máximo de nós a expandir (1.000.000) e um tempo limite (30 segundos).
 - **Otimização de Memória (A* e Gulosa):** Para as buscas informadas, foi implementado um cache para os valores heurísticos, evitando recálculos desnecessários e melhorando o desempenho.
 
 ---
 
 ## Autores
 
-- [cite_start]Kaio Mourato de Moura 
-- [cite_start]Caio Casemiro de Matos Moura
+- Kaio Mourato de Moura 
+- Caio Casemiro de Matos Moura
 
 ---
 
