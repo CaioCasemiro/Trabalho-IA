@@ -20,13 +20,14 @@ Este projeto implementa um resolvedor para o clássico problema do n-Puzzle (que
   - [Comparação de Algoritmos](#comparação-de-algoritmos)
 - [Detalhes Técnicos](#detalhes-técnicos)
 - [Autores](#autores)
+- [Recursos Adicionais](#recursos-adicionais)
 - [Licença](#licença)
 
 ---
 
 ## Visão Geral
 
-O objetivo principal é encontrar a sequência de movimentos que transforma uma configuração inicial do tabuleiro em uma configuração objetivo predefinida. O sistema permite comparar diferentes algoritmos de busca quanto à eficiência (tempo, nós expandidos, profundidade da solução) e visualizar a árvore de busca de forma textual estruturada, destacando o caminho solução.
+O objetivo principal é encontrar a sequência de movimentos que transforma uma configuração inicial do tabuleiro em uma configuração objetivo predefinida. O sistema permite comparar diferentes algoritmos de busca quanto à eficiência (tempo, nós expandidos, profundidade da solução) e visualizar o **caminho da solução** de forma textual estruturada, mostrando os estados intermediários.
 
 ---
 
@@ -35,30 +36,29 @@ O objetivo principal é encontrar a sequência de movimentos que transforma uma 
 - **Suporte a múltiplos tamanhos de puzzle:**
   - 8-Puzzle (3x3)
   - 15-Puzzle (4x4)
-  - 24-Puzzle (5x5) *(apenas para buscas informadas)*
+  - 24-Puzzle (5x5) *(para buscas informadas e algumas desinformadas com limites)*
 
 - **Algoritmos de busca implementados:**
-  - **Sem informação:**
+  - **Sem informação (Cegos):**
     - Busca em Largura (BFS)
     - Busca em Profundidade (DFS)
     - Busca com Aprofundamento Iterativo (IDS)
-  - **Com informação:**
+  - **Com informação (Heurísticos):**
     - A* (A Estrela)
-    - Busca Gulosa
+    - Busca Gulosa (Greedy Best-First Search)
 
-- **Heurísticas para buscas informadas:**
+- **Heurísticas admissíveis para buscas informadas:**
   - Número de peças fora do lugar
   - Soma das distâncias de Manhattan das peças até suas posições corretas
 
 - **Interface gráfica (Tkinter):**
-  - Seleção do tipo de puzzle
-  - Inserção manual ou embaralhamento automático do estado inicial
-  - Escolha de algoritmo(s) e heurística
-  - Definição do limite de profundidade para DFS/IDS
-  - Execução de múltiplos algoritmos em sequência
-  - Visualização dos resultados detalhados
-  - Visualização textual estruturada da árvore de busca, com destaque do caminho solução
-  - Comparação automática dos algoritmos executados
+  - Seleção do tamanho do puzzle.
+  - Inserção manual ou embaralhamento automático de estados iniciais solúveis.
+  - Escolha de algoritmo(s) e heurística(s).
+  - Limites de nós expandidos e tempo de execução configurados para evitar travamentos em buscas mais complexas.
+  - Exibição de métricas detalhadas de desempenho (tempo, nós expandidos, profundidade da solução).
+  - Visualização textual do caminho completo da solução (sequência de estados e movimentos).
+  - Tabela comparativa dos algoritmos executados para o mesmo estado inicial.
 
 ---
 
@@ -66,19 +66,19 @@ O objetivo principal é encontrar a sequência de movimentos que transforma uma 
 
 ### Pré-requisitos
 
-- **Python 3.8 ou superior** (recomendado Python 3.10, 3.11 ou 3.12)
-- **Tkinter** (já incluso na maioria das instalações do Python)
-- Não são necessárias bibliotecas externas além das padrão do Python
+- [cite_start]**Python 3.8 ou superior** (Testado e recomendado com Python 3.12.0) [cite: 96]
+- **Tkinter** (geralmente já incluso na instalação padrão do Python)
+- [cite_start]Não são necessárias bibliotecas externas além das padrão do Python. [cite: 98, 99]
 
 ### Instalação e Execução
 
-1. **Clone o repositório:**
+1.  **Clone o repositório:**
     ```bash
     git clone https://github.com/CaioCasemiro/Trabalho-IA.git
-    cd n_puzzle_solver
+    cd SeuRepositorioPuzzleSolver # ou o nome da pasta do seu projeto
     ```
 
-2. **(Opcional) Crie e ative um ambiente virtual:**
+2.  **(Opcional) Crie e ative um ambiente virtual:**
     ```bash
     python -m venv venv
     # No Windows:
@@ -87,30 +87,25 @@ O objetivo principal é encontrar a sequência de movimentos que transforma uma 
     source venv/bin/activate
     ```
 
-3. **Execute a aplicação:**
+3.  **Execute a aplicação:**
     ```bash
-    python src/main.py
+    python gui.py
     ```
 
-    > **Dica:** Se aparecer erro de Tkinter, instale o pacote correspondente ao seu sistema operacional.
+    > **Dica:** Se você encontrar problemas com o Tkinter (por exemplo, "ModuleNotFoundError: No module named 'tkinter'"), pode ser necessário instalá-lo separadamente, dependendo do seu sistema operacional e como o Python foi instalado. Por exemplo, em sistemas baseados em Debian/Ubuntu, use `sudo apt-get install python3-tk`.
 
 ### Estrutura dos Arquivos
 
-```
-Trabalho-IA/
+SeuRepositorioPuzzleSolver/
 │
-├── src/
-│   ├── gui.py                  # Interface gráfica principal
-│   ├── uninformed_searches.py  # Algoritmos BFS, DFS, IDS
-│   ├── informed_searches.py    # Algoritmos A*, Gulosa
-│   ├── puzzle.py               # Estrutura do estado do puzzle
-│   ├── heuristics.py           # Funções de heurística
-│   ├── utils.py                # Funções auxiliares (validação, embaralhamento, árvore textual)
-│   ├── main.py                 # Ponto de entrada da aplicação
-│
-├── readme.md
-└── ...
-```
+├── gui.py                  # Interface gráfica principal e lógica de interação do usuário.
+├── uninformed_searches.py  # Implementações dos algoritmos de busca sem informação (BFS, DFS, IDS).
+├── informed_searches.py    # Implementações dos algoritmos de busca com informação (A*, Busca Gulosa).
+├── puzzle.py               # Definição da classe PuzzleState, que representa um estado do tabuleiro.
+├── heuristics.py           # Funções para cálculo das heurísticas (peças fora do lugar, distância de Manhattan).
+├── utils.py                # Funções auxiliares (validação de estado, geração de estados, exibição do caminho).
+└── readme.md               # Este arquivo.
+
 
 ---
 
@@ -118,64 +113,58 @@ Trabalho-IA/
 
 ### Seleção do Puzzle
 
-- Escolha o tamanho do puzzle (8, 15 ou 24 peças) no topo da janela.
-- O grid de entrada será ajustado automaticamente.
+- Escolha o tamanho do puzzle (3x3 para 8-Puzzle, 4x4 para 15-Puzzle, 5x5 para 24-Puzzle) no menu suspenso "Tamanho do Puzzle". [cite_start]A grade de entrada será ajustada automaticamente.
 
 ### Inserção do Estado Inicial
 
-- Preencha manualmente cada célula do grid com os números do estado inicial desejado.
-- Ou clique em **"Embaralhar"** para gerar automaticamente um estado inicial solúvel aleatório.
+- [cite_start]Preencha manualmente cada célula da grade de "Estado Inicial" com os números do estado desejado (0 representa o espaço vazio).
+- [cite_start]Alternativamente, clique no botão **"Embaralhar"** para gerar um estado inicial solúvel aleatoriamente.
 
 ### Escolha do Algoritmo e Heurística
 
-- Marque um ou mais algoritmos de busca para executar.
-- Para A* ou Gulosa, selecione a heurística desejada (combobox será habilitado automaticamente).
-- Para DFS/IDS, defina o limite de profundidade se desejar.
+- Selecione o "Tipo de Busca":
+    - **"Sem informação"**: Ativa as opções BFS, DFS, IDS.
+    - **"Com informação"**: Ativa as opções A* e Busca Gulosa, e permite a escolha da heurística (Peças Fora do Lugar ou Distância de Manhattan).
+- Escolha o algoritmo desejado entre as opções disponíveis para o tipo de busca selecionado.
 
 ### Execução e Visualização dos Resultados
 
-- Clique em **"Executar"** para iniciar a busca.
-- Os resultados aparecerão na aba **"Resultados"**, incluindo:
-  - Tempo de execução
-  - Número de nós expandidos
-  - Profundidade da solução
-  - Sequência de movimentos
-- A aba **"Árvore de Busca"** mostrará uma representação textual estruturada da árvore de busca, com o caminho solução destacado.
-  - Cada nó exibe: profundidade, movimento (se aplicável) e o estado do tabuleiro.
-  - O caminho correto é destacado com "***" antes e depois da linha.
-- A aba **"Comparativo"** mostra uma tabela comparando os algoritmos executados.
+- Clique em **"Iniciar Busca"** para executar o algoritmo selecionado.
+- Durante a execução, um cronômetro será exibido.
+- Ao finalizar, os resultados aparecerão na área de texto, incluindo:
+  - [cite_start]O caminho da solução, mostrando cada passo e o estado do tabuleiro correspondente.
+  - [cite_start]Tempo de execução em segundos, milissegundos e nanossegundos. 
+  - [cite_start]Número de nós expandidos durante a busca. 
+  - [cite_start]Profundidade da solução (número de movimentos). 
+  - [cite_start]A sequência de movimentos (e.g., 'cima', 'baixo', 'esquerda', 'direita').
 
 ### Comparação de Algoritmos
 
-- Execute múltiplos algoritmos para o mesmo estado inicial.
-- Compare tempo, nós expandidos e profundidade na aba "Comparativo".
+- Para comparar algoritmos, você pode executar diferentes buscas para o mesmo estado inicial.
+- [cite_start]As métricas de desempenho serão exibidas na área de resultado, permitindo a comparação manual ou a coleta de dados para tabelas externas, como as apresentadas no relatório. 
 
 ---
 
 ## Detalhes Técnicos
 
-- **Árvore de Busca Textual:**  
-  A árvore é impressa com indentação e símbolos (├──, └──) para indicar hierarquia. O caminho solução é destacado.  
-  Exemplo de nó:
-  ```
-  *** Prof 3 [CIMA]: 1 2 3 | 4 5 6 | 7 8   ***
-  ```
-- **Estados Solúveis:**  
-  O sistema só permite execução para estados solúveis, validando automaticamente a entrada.
-- **Limite de Nós:**  
-  Para puzzles grandes, a árvore textual pode ser muito extensa. Use puzzles menores para melhor visualização.
+- [cite_start]**Representação dos Estados:** Cada estado do tabuleiro é representado internamente como uma tupla unidimensional de inteiros, com 0 representando o espaço vazio.
+- [cite_start]**Custo da Ação:** Cada movimento da peça vazia é considerado um custo uniforme de 1.
+- [cite_start]**Condição de Objetivo:** A busca termina quando o estado atual do tabuleiro é idêntico ao estado objetivo predefinido (números em ordem crescente com 0 na última posição).
+- [cite_start]**Validação de Solubilidade:** O sistema inclui lógica para validar se um estado inicial é solúvel, impedindo a execução de puzzles insolúveis.
+- [cite_start]**Limites de Busca:** Para gerenciar a complexidade e evitar execuções excessivamente longas, os algoritmos têm limites definidos para o número máximo de nós a expandir (1.000.000) e um tempo limite (30 segundos).
+- **Otimização de Memória (A* e Gulosa):** Para as buscas informadas, foi implementado um cache para os valores heurísticos, evitando recálculos desnecessários e melhorando o desempenho.
 
 ---
 
 ## Autores
 
-- Kaio Mourato
-- Caio Casemiro
+- [cite_start]Kaio Mourato de Moura 
+- [cite_start]Caio Casemiro de Matos Moura
 
 ---
 
-## Licença
+## Recursos Adicionais
 
-Este projeto está sob a licença MIT. Consulte o arquivo [LICENSE](LICENSE) para mais detalhes.
+- **Repositório GitHub:** Para acessar o código-fonte completo e contribuir para o projeto, visite: **[https://github.com/CaioCasemiro/Trabalho-IA]**
+- **Vídeo Explicativo no YouTube:** Para uma demonstração e explicação detalhada do sistema, assista ao vídeo em: **[https://www.youtube.com/watch?v=b2caOAh1N5c]**
 
----
